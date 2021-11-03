@@ -17,6 +17,7 @@ TAGVAR=false
 TAGONLY=""
 CONTAINER_ENV='{"environment": []}'
 SET_CONTAINER_ENV=false
+DD_WORKAROUND=false
 ENABLE_ROLLBACK=false
 USE_MOST_RECENT_TASK_DEFINITION=false
 AWS_CLI=$(which aws)
@@ -404,6 +405,10 @@ function createNewTaskDefJson() {
       NEW_DEF=$(echo $NEW_DEF | jq " del(.containerDefinitions[].environment[]) | .containerDefinitions[] += $CONTAINER_ENV")
     fi
 
+    if [[ "$DD_WORKAROUND" == true ]];then
+      NEW_DEF=$(echo $NEW_DEF | jq '(.containerDefinitions[] | select(.name |test(".*datadog-agent.*")).image) = "public.ecr.aws/datadog/agent:latest"')
+    fi
+
     # If in test mode output $NEW_DEF
     if [ "$BASH_SOURCE" != "$0" ]; then
       echo "$NEW_DEF"
@@ -704,6 +709,9 @@ if [ "$BASH_SOURCE" == "$0" ]; then
                 CONTAINER_ENV="$2"
                 SET_CONTAINER_ENV=true
                 shift
+                ;;
+            -G|--datadog-workaround)
+                DD_WORKAROUND=true
                 ;;
             -e|--tag-env-var)
                 TAGVAR="$2"
