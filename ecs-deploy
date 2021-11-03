@@ -703,7 +703,6 @@ if [ "$BASH_SOURCE" == "$0" ]; then
             -E|--container-variable)
                 CONTAINER_ENV="$2"
                 SET_CONTAINER_ENV=true
-                echo $CONTAINER_ENV
                 shift
                 ;;
             -e|--tag-env-var)
